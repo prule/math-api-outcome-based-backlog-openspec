@@ -23,7 +23,7 @@
 
 ## 5. CI
 
-- [ ] 5.1 Verify the PR for this change shows the `build` check passing
+- [x] 5.1 Verify the PR for this change shows the `build` check passing
 
 ## 6. Integration
 
