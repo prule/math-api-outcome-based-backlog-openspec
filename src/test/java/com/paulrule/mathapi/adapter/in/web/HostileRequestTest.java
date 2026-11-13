@@ -150,4 +150,36 @@ class HostileRequestTest {
     void rejectsDeepNestingNamingTheLimit() throws Exception {
         expectInvalid(calculate(nested(500)), "500 levels");
     }
+
+    @Test // the advice reads at most 65,537 bytes, never the whole body
+    void rejectsAHugeBodyQuickly() {
+        var body = VALID.substring(0, VALID.length() - 1) + ", \"x\": \"" + "1".repeat(5_000_000) + "\"}";
+
+        assertTimeout(Duration.ofSeconds(1), () -> expectInvalid(calculate(body), "16,384 characters"));
+    }
+
+    @Test // a character is a code point: an emoji is one character, though two UTF-16 units and four UTF-8 bytes
+    void countsCodePointsNotUtf16Units() throws Exception {
+        var field = "\uD83D\uDE00".repeat(500);
+        var extra = new StringBuilder();
+        for (int i = 0; i < 30; i++) {
+            extra.append(", \"x").append(i).append("\": \"").append(field).append('"');
+        }
+        var body = VALID.substring(0, VALID.length() - 1) + extra + "}";
+        assertThat(body.codePointCount(0, body.length())).isLessThanOrEqualTo(16_384);
+        assertThat(body.length()).isGreaterThan(16_384);
+
+        calculate(body).andExpect(status().isOk());
+    }
+
+    @Test // the body is counted in its declared charset, not assumed to be UTF-8
+    void countsTheBodyInItsDeclaredCharset() throws Exception {
+        var body = paddedTo(10_000);
+
+        mvc.perform(post("/api/v1/calculations")
+                        .contentType("application/json;charset=UTF-16LE")
+                        .content(body.getBytes(StandardCharsets.UTF_16LE)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("3"));
+    }
 }

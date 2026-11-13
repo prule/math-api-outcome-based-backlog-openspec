@@ -13,17 +13,15 @@ import tools.jackson.databind.type.LogicalType;
 public class JacksonConfig {
 
     /** PRD §3.2 request limits, checked while tokenising, before any number is built. */
-    public static final int MAX_STRING_LENGTH = 1000;
+    private static final int MAX_STRING_OR_NUMBER_LENGTH = 1000;
 
-    public static final int MAX_NUMBER_LENGTH = 1000;
-
-    public static final int MAX_NESTING_DEPTH = 500;
+    private static final int MAX_NESTING_DEPTH = 500;
 
     @Bean
     JsonFactoryBuilderCustomizer requestLimits() {
         return builder -> builder.streamReadConstraints(StreamReadConstraints.builder()
-                .maxStringLength(MAX_STRING_LENGTH)
-                .maxNumberLength(MAX_NUMBER_LENGTH)
+                .maxStringLength(MAX_STRING_OR_NUMBER_LENGTH)
+                .maxNumberLength(MAX_STRING_OR_NUMBER_LENGTH)
                 .maxNestingDepth(MAX_NESTING_DEPTH)
                 .build());
     }

@@ -35,7 +35,7 @@ class OperandLimitsTest {
 
     @ParameterizedTest
     @MethodSource("pastTheLimits")
-    void rejectsAOutsideTheLimitsNamingItWithoutItsValue(String operand) {
+    void rejectsOperandAOutsideTheLimitsNamingItWithoutItsValue(String operand) {
         assertThatThrownBy(() -> new Calculation(Operation.ADD, new BigDecimal(operand), BigDecimal.ONE))
                 .isInstanceOf(OperandOutOfRangeException.class)
                 .hasMessageContaining("'a'")
@@ -44,7 +44,7 @@ class OperandLimitsTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"1E+1001", "1E-1001"})
-    void rejectsBOutsideTheLimitsNamingIt(String operand) {
+    void rejectsOperandBOutsideTheLimitsNamingIt(String operand) {
         assertThatThrownBy(() -> new Calculation(Operation.MULTIPLY, BigDecimal.ONE, new BigDecimal(operand)))
                 .isInstanceOf(OperandOutOfRangeException.class)
                 .hasMessageContaining("'b'");

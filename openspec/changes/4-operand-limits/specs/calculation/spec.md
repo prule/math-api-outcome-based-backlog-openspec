@@ -40,8 +40,17 @@ a number (PRD §3.2), and the `detail` SHALL name the limit broken.
   limit
 
 #### Scenario: The body limit counts characters, not bytes
-- **WHEN** a client sends a body of at most 16,384 characters that is more than 16,384 bytes in UTF-8
+- **WHEN** a client sends a body of at most 16,384 characters that is more than 16,384 bytes in UTF-8, or whose
+  emoji make it more than 16,384 UTF-16 units
+- **THEN** it is not rejected for its size (a character is a code point)
+
+#### Scenario: The body is counted in its declared charset
+- **WHEN** a client sends a 10,000-character body encoded as UTF-16LE with `charset=UTF-16LE`
 - **THEN** it is not rejected for its size
+
+#### Scenario: A huge body is not read whole
+- **WHEN** a client sends a body of several megabytes
+- **THEN** it is rejected as over 16,384 characters within a second
 
 #### Scenario: Huge numbers and strings
 - **WHEN** a client sends an Operand as a JSON number of 1,001 or 15,000 digits, or a JSON string of 1,001

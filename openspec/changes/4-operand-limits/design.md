@@ -29,8 +29,9 @@ constructor checks BR-9, then BR-1 on each Operand present. Jackson 3's default 
   built, so parsing cannot become the attack.
 - **Body size in characters via `RequestBodyAdvice`** in `adapter.in.web`. Jackson's `maxDocumentLength` counts
   bytes for a byte stream, but PRD §3.2 says characters. The advice's `beforeBodyRead` reads at most
-  `4 × 16,384 + 1` bytes (16,384 characters are at most 65,536 UTF-8 bytes); more bytes, or more than 16,384
-  characters once decoded, throws `RequestTooLargeException`; otherwise it hands the buffered bytes on. Working
+  `4 × 16,384 + 1` bytes (a code point is at most 4 bytes in UTF-8, UTF-16 and UTF-32); more bytes, or more than
+  16,384 code points once decoded in the `Content-Type` charset (UTF-8 if none), throws `RequestTooLargeException`;
+  otherwise it hands the buffered bytes on. A character is a code point, so an emoji counts once. Working
   inside Spring MVC keeps every error in the one `@RestControllerAdvice` (STANDARDS.md §4); a servlet filter would
   not.
 - **Naming the limit.** Jackson reports every limit as `StreamConstraintsException`, wrapped by Spring in
@@ -46,6 +47,9 @@ constructor checks BR-9, then BR-1 on each Operand present. Jackson 3's default 
 
 ## Risks / Trade-offs
 
+- [An exponent beyond `int` range (`1E-2147483649`) is not a `BigDecimal` at all, so the parser rejects it as a
+  generic invalid request before BR-1 can name it] → Accepted: no such value can be an Operand, it is rejected in
+  constant time, and the detail still says operands must be decimal numbers.
 - [Matching Jackson's message text is brittle] → Each mapping has a test; an unmapped message still returns a
   correct `invalid-request`, only less specific.
 - [The advice buffers up to 64 KiB per request] → Bounded and small; the body was already read whole by Jackson.
