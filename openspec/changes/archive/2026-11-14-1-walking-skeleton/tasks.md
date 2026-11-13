@@ -20,7 +20,7 @@
 
 ## 5. CI
 
-- [ ] 5.1 Add `.github/workflows/build.yml` running `./gradlew build` on `pull_request` and on `push` to `main` with a read-only token; verify the PR for this change shows the check passing
+- [x] 5.1 Add `.github/workflows/build.yml` running `./gradlew build` on `pull_request` and on `push` to `main` with a read-only token; verify the PR for this change shows the check passing
 
 ## 6. Integration
 
