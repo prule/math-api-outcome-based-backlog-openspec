@@ -12,7 +12,7 @@
 
 ## 3. CI
 
-- [ ] 3.1 Verify the PR for this change shows the `build` check passing
+- [x] 3.1 Verify the PR for this change shows the `build` check passing
 
 ## 4. Integration
 
