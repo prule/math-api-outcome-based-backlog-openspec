@@ -2,6 +2,7 @@ package com.paulrule.mathapi.adapter.in.web;
 
 import com.paulrule.mathapi.domain.ArityMismatchException;
 import com.paulrule.mathapi.domain.DivisionByZeroException;
+import com.paulrule.mathapi.domain.OperandOutOfRangeException;
 import com.paulrule.mathapi.domain.Operation;
 import com.paulrule.mathapi.domain.UnknownOperationException;
 import java.net.URI;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import tools.jackson.core.exc.StreamConstraintsException;
 
 /** The single source of error responses: RFC 9457 Problem Details, including framework errors (STANDARDS.md §4). */
 @RestControllerAdvice
@@ -52,9 +54,24 @@ class ProblemDetailsAdvice extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(
             HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        return ResponseEntity.badRequest()
-                .body(invalidRequest(
-                        "The request body must be a JSON object whose operands are decimal numbers or strings."));
+        return ResponseEntity.badRequest().body(invalidRequest(unreadableDetail(ex)));
+    }
+
+    /** Names the request limit broken (PRD §3.2); Jackson's own message is never sent, it names Jackson classes. */
+    private static String unreadableDetail(Throwable ex) {
+        for (Throwable cause = ex; cause != null; cause = cause.getCause()) {
+            if (cause instanceof StreamConstraintsException limit && limit.getMessage() != null) {
+                var message = limit.getMessage();
+                // Jackson reports a number longer than its first text buffer as a string, so one detail covers both.
+                if (message.startsWith("String value length") || message.startsWith("Number value length")) {
+                    return "A JSON string or number must be at most 1,000 characters.";
+                }
+                if (message.startsWith("Document nesting depth")) {
+                    return "The request body must be nested at most 500 levels deep.";
+                }
+            }
+        }
+        return "The request body must be a JSON object whose operands are decimal numbers or strings.";
     }
 
     @Override
@@ -75,6 +92,16 @@ class ProblemDetailsAdvice extends ResponseEntityExceptionHandler {
     @ExceptionHandler
     ProblemDetail arityMismatch(ArityMismatchException ex) {
         return invalidRequest(ex.getMessage());
+    }
+
+    @ExceptionHandler
+    ProblemDetail requestTooLarge(RequestTooLargeException ex) {
+        return invalidRequest(ex.getMessage());
+    }
+
+    @ExceptionHandler
+    ProblemDetail operandOutOfRange(OperandOutOfRangeException ex) {
+        return problem(HttpStatus.BAD_REQUEST, "operand-out-of-range", "Operand out of range", ex.getMessage());
     }
 
     @ExceptionHandler
