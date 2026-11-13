@@ -16,7 +16,7 @@
 | 2 | Clients get exact results for add, subtract and multiply | Done | #3 |
 | 3 | Clients can divide | Done | #4 |
 | 4 | Hostile operands cannot take the service down | Done | #5 |
-| 5 | Developers can integrate from the API docs alone | In progress | |
+| 5 | Developers can integrate from the API docs alone | Done | #6 |
 | 5a | API docs are not public in production | Not started | |
 | 6 | Clients can raise to a power and take a modulo | Not started | |
 | 7 | Clients can run single-operand operations | Not started | |
