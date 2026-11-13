@@ -1,0 +1,383 @@
+<title>Outcome Backlog Compared</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&display=swap">
+<style>
+/* Layout: one reading column of tables and two charts; the two builds keep one colour each everywhere. */
+:root {
+  --bg: #f6f7f5; --surface: #ffffff; --fg: #1d2421; --muted: #5b6661; --rule: #d9dedb;
+  --vibe: #0f7c6e; --vibe-soft: #d6efe9; --oa2: #6a4fb3; --oa2-soft: #e7e1f6;
+  --good: #1f7a3a; --bad: #b3261e; --warn: #8a5a00;
+  --display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121614; --surface: #1a201d; --fg: #e4e9e6; --muted: #9aa5a0; --rule: #2e3733;
+  --vibe: #4cc3b1; --vibe-soft: #17332e; --oa2: #a891ec; --oa2-soft: #2a2341;
+  --good: #6fcf8a; --bad: #f2a29c; --warn: #e6b866; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121614; --surface: #1a201d; --fg: #e4e9e6; --muted: #9aa5a0; --rule: #2e3733;
+  --vibe: #4cc3b1; --vibe-soft: #17332e; --oa2: #a891ec; --oa2-soft: #2a2341;
+  --good: #6fcf8a; --bad: #f2a29c; --warn: #e6b866; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font: 15px/1.6 var(--body); }
+.wrap { max-width: 920px; margin: 0 auto; padding-block: 40px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 44px; }
+h1, h2, h3 { font-family: var(--display); line-height: 1.15; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(30px, 5vw, 44px); letter-spacing: -0.01em; }
+h2 { font-size: 26px; }
+h3 { font-size: 17px; font-family: var(--body); font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+section { display: grid; gap: 16px; min-width: 0; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.lede { font-size: 17px; color: var(--muted); }
+.v { color: var(--vibe); font-weight: 600; } .o { color: var(--oa2); font-weight: 600; }
+.key { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 14px; }
+.key span { display: inline-flex; align-items: center; gap: 8px; }
+.sw { width: 12px; height: 12px; border-radius: 2px; display: inline-block; }
+.sw.v { background: var(--vibe); } .sw.o { background: var(--oa2); }
+.verdict { background: var(--surface); border: 1px solid var(--rule); border-left: 4px solid var(--fg); padding: 20px 22px; display: grid; gap: 12px; }
+.verdict p { max-width: none; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--rule); padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.tile .label { font-size: 13px; color: var(--muted); }
+.tile .nums { font: 600 22px/1.2 var(--display); display: flex; gap: 14px; align-items: baseline; font-variant-numeric: tabular-nums; }
+.tile .nums small { font: 400 12px var(--body); color: var(--muted); margin-left: 2px; }
+.tile .note { font-size: 13px; color: var(--muted); }
+.scroll { overflow-x: auto; border: 1px solid var(--rule); background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-weight: 600; font-size: 13px; color: var(--muted); background: var(--bg); white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td.n, th.n { text-align: right; white-space: nowrap; }
+td code, p code, li code { font: 13px var(--mono); }
+.win { font: 500 11px/1 var(--mono); letter-spacing: 0.04em; padding: 3px 6px; border-radius: 3px; white-space: nowrap; display: inline-block; }
+.win.v { background: var(--vibe-soft); color: var(--vibe); } .win.o { background: var(--oa2-soft); color: var(--oa2); }
+.win.t { background: var(--bg); color: var(--muted); border: 1px solid var(--rule); }
+.bad { color: var(--bad); font-weight: 600; } .good { color: var(--good); font-weight: 600; }
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+figure { margin: 0; background: var(--surface); border: 1px solid var(--rule); padding: 14px 12px 6px; display: grid; gap: 4px; min-width: 0; }
+figcaption { font-size: 13px; color: var(--muted); padding: 0 4px; }
+.chart { width: 100%; height: auto; display: block; }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+.chart .axis { stroke: var(--muted); stroke-width: 1; }
+.chart .tick { fill: var(--muted); font: 11px var(--body); }
+.chart .val { fill: var(--fg); font: 500 11px var(--mono); }
+.chart .b-vibe { fill: var(--vibe); } .chart .b-oa2 { fill: var(--oa2); }
+ul, ol { margin: 0; padding-left: 20px; display: grid; gap: 8px; max-width: 72ch; }
+.callout { border: 1px solid var(--rule); background: var(--surface); padding: 16px 18px; display: grid; gap: 8px; }
+.callout.alert { border-left: 4px solid var(--bad); }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.cols > div { min-width: 0; display: grid; gap: 8px; align-content: start; }
+footer { font-size: 13px; color: var(--muted); display: grid; gap: 8px; border-top: 1px solid var(--rule); padding-top: 20px; }
+footer p { max-width: none; }
+a { color: inherit; text-underline-offset: 2px; }
+a:focus-visible { outline: 2px solid var(--vibe); outline-offset: 2px; }
+</style>
+<div class="wrap">
+
+<header style="display:grid;gap:14px">
+  <div class="eyebrow">Math API · outcome-based backlog · items 1–5 · 14 Nov 2026</div>
+  <h1>Outcome backlog: vibe coding vs OpenSpec</h1>
+  <p class="lede">The same PRD, domain model and standards as the earlier two-build comparison, but this time the backlog states outcomes ("who gets what, and how we will know") and leaves the design to the builder. One agent, Claude Opus 5.5, built it twice. The vibe build went straight from each outcome to code. The OpenSpec build ran <code>/opsx:propose</code>, <code>/opsx:apply</code>, <code>/opsx:verify</code> and <code>/opsx:archive</code> around the same code. Both ran the same <code>/ponytail:ponytail-review</code> and <code>/code-review</code>, wrote retrospectives, and merged each item by PR on green CI.</p>
+  <div class="key">
+    <span><i class="sw v"></i><b class="v">vibe</b>&nbsp;math-api-outcome-based-backlog-vibe @ <code>d0510d5</code></span>
+    <span><i class="sw o"></i><b class="o">openspec</b>&nbsp;math-api-outcome-based-backlog-openspec @ <code>28bd284</code></span>
+  </div>
+</header>
+
+<section class="verdict">
+  <div class="eyebrow">Short answer</div>
+  <p>The time gap shrank, but the token gap didn't. OpenSpec still did slightly better on contract correctness. With an outcome backlog, the OpenSpec build spent <b>1.16×</b> the active time of the vibe build on items 2–5 (46.4 against 40.1 minutes), down from 1.52× with the task backlog. It still used <b>1.43×</b> the output tokens. Most of the narrowing came from the vibe build slowing down, because it now had to choose its own design: 40.1 minutes, up from 32.6.</p>
+  <p>Both builds wrote the same BR-1 bug as last time, <code>Math.abs(scale)</code>, which lets a scale of <code>Integer.MIN_VALUE</code> through. Again only the OpenSpec build fixed it. This time it caught the bug itself while building, seconds after its domain tests passed, and its <code>design.md</code> had stated the rule as <code>-1000 &le; scale &le; 1000</code>. The vibe build shipped the bug, but it can't be reached over HTTP: Jackson 3 rejects that exponent while parsing, so both jars return 400.</p>
+  <p>Otherwise the two came out level, and each did better in different places. The <b class="o">OpenSpec</b> build follows the PRD more literally. Its framework errors carry <code>type</code>, it rejects <code>"operation": 123</code> as an invalid request, and it counts the body limit in characters, as the PRD says. The <b class="v">vibe</b> build is 15% smaller, with 95% branch coverage against 82.5%, and it documents its 406, 415 and 500 responses with examples that are checked against real responses. To meet the body limit it changed the PRD from "characters" to "bytes", so one yaml block did the job instead of 64 lines of code. Sonar passed both, with one code smell each.</p>
+</section>
+
+<section>
+  <div class="tiles">
+    <div class="tile"><div class="label">Active minutes, items 2–5</div><div class="nums"><span class="v">40.1</span><span class="o">46.4</span></div><div class="note">OpenSpec took 1.16× (task backlog: 1.52×)</div></div>
+    <div class="tile"><div class="label">Output tokens, items 2–5</div><div class="nums"><span class="v">137k</span><span class="o">197k</span></div><div class="note">OpenSpec used 1.43× (task backlog: 1.39×)</div></div>
+    <div class="tile"><div class="label">Tests at item 5 (all green)</div><div class="nums"><span class="v">102</span><span class="o">127</span></div><div class="note">Branch coverage 95.0% vs 82.5%</div></div>
+    <div class="tile"><div class="label">Review findings recorded</div><div class="nums"><span class="v">68</span><span class="o">74</span></div><div class="note">5 of OpenSpec's 8 verify findings were "CI task not ticked yet"</div></div>
+    <div class="tile"><div class="label">Live probes matching (status + type)</div><div class="nums"><span class="v">38</span><span class="o">/45</span></div><div class="note">4 of the 7 differences: <code>type</code> missing on framework errors</div></div>
+    <div class="tile"><div class="label">Sonar ncloc</div><div class="nums"><span class="v">474</span><span class="o">555</span></div><div class="note">OpenSpec +17% (task backlog: vibe +41%)</div></div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">Process</div>
+  <h2>What was the same and what differed</h2>
+  <div class="scroll"><table>
+    <tr><th></th><th><b class="v">vibe</b></th><th><b class="o">openspec</b></th></tr>
+    <tr><td>Starting docs</td><td colspan="2">Identical PRD, DOMAIN-MODEL, STANDARDS and outcome-based BACKLOG. Each "We know it's done when" check needs a test.</td></tr>
+    <tr><td>Prompt per item</td><td colspan="2"><code>start item N</code>. CLAUDE.md drives every step through to the merge.</td></tr>
+    <tr><td>Before code</td><td>Nothing. The agent chooses the design.</td><td><code>/opsx:propose</code>: proposal, design, spec deltas, tasks; <code>openspec validate</code>. No plan review.</td></tr>
+    <tr><td>Reviews</td><td><code>/ponytail:ponytail-review</code> + <code>/code-review</code> (standards and spec sub-agents)</td><td>The same two, plus <code>/opsx:verify</code></td></tr>
+    <tr><td>After code</td><td>Retro, PR, merge</td><td>Draft PR for CI, <code>/opsx:archive</code>, retro, ready PR with auto-merge</td></tr>
+    <tr><td>Written planning, items 1–5</td><td class="n">0 lines</td><td class="n">983 lines archived · 365 lines of living specs</td></tr>
+    <tr><td>Retrospectives</td><td class="n">5 · 290 lines</td><td class="n">5 · 344 lines (adds "Spec drift")</td></tr>
+    <tr><td>Human prompts, items 1–5</td><td class="n">14</td><td class="n">11</td></tr>
+  </table></div>
+  <p>Neither build ran without help. The vibe build paused once before <code>/code-review</code>, and that led to the "don't stop between steps" rule in its CLAUDE.md. After that, every item needed a "Check and merge", because the auto-mode safety check blocked the CI monitor and the merge. The OpenSpec build found an ordering bug in its own process on item 1: archive needs the CI task ticked, and CI only runs once a PR exists. That bug became process PR #2, "open the draft PR before archive". The build then needed repo settings for auto-merge and branch protection, and a manual merge twice when GitHub armed auto-merge but never fired it.</p>
+</section>
+
+<section>
+  <div class="eyebrow">Effort</div>
+  <h2>Cost per item</h2>
+  <p>Both session logs were measured with one script, the same method as the earlier report. Each log is split at the user's <code>start item N</code> prompts, so repo setup before item 1 is left out of both. Active time adds up the gaps between log events from the main session and every subagent, and skips any gap over 3 minutes, so waiting for a human or for CI is left out. Tokens are counted once per API message. Item 1 is included this time because both logs now split the same way. OpenSpec's item 1 includes its process fix (PR #2) and the repo settings. Vibe's item 1 includes its own process edit.</p>
+  <div class="charts">
+    <figure><svg viewBox="0 0 600 250" role="img" aria-label="Active minutes per backlog item, items 1 to 5" class="chart">
+<line x1="56" x2="590" y1="196.0" y2="196.0" class="grid"/><text x="48" y="200.0" class="tick" text-anchor="end">0</text>
+<line x1="56" x2="590" y1="153.0" y2="153.0" class="grid"/><text x="48" y="157.0" class="tick" text-anchor="end">5</text>
+<line x1="56" x2="590" y1="110.0" y2="110.0" class="grid"/><text x="48" y="114.0" class="tick" text-anchor="end">10</text>
+<line x1="56" x2="590" y1="67.0" y2="67.0" class="grid"/><text x="48" y="71.0" class="tick" text-anchor="end">15</text>
+<line x1="56" x2="590" y1="24.0" y2="24.0" class="grid"/><text x="48" y="28.0" class="tick" text-anchor="end">20</text>
+<rect x="69.4" y="73.0" width="36" height="123.0" rx="2" class="b-vibe"><title>14.3</title></rect><text x="87.4" y="67.0" class="val" text-anchor="middle">14.3</text>
+<rect x="111.4" y="36.9" width="36" height="159.1" rx="2" class="b-oa2"><title>18.5</title></rect><text x="129.4" y="30.9" class="val" text-anchor="middle">18.5</text>
+<text x="109.4" y="216" class="tick" text-anchor="middle">1 · Skeleton</text>
+<rect x="176.2" y="110.9" width="36" height="85.1" rx="2" class="b-vibe"><title>9.9</title></rect><text x="194.2" y="104.9" class="val" text-anchor="middle">9.9</text>
+<rect x="218.2" y="91.9" width="36" height="104.1" rx="2" class="b-oa2"><title>12.1</title></rect><text x="236.2" y="85.9" class="val" text-anchor="middle">12.1</text>
+<text x="216.2" y="216" class="tick" text-anchor="middle">2 · ADD/SUB/MUL</text>
+<rect x="283.0" y="134.9" width="36" height="61.1" rx="2" class="b-vibe"><title>7.1</title></rect><text x="301.0" y="128.9" class="val" text-anchor="middle">7.1</text>
+<rect x="325.0" y="116.0" width="36" height="80.0" rx="2" class="b-oa2"><title>9.3</title></rect><text x="343.0" y="110.0" class="val" text-anchor="middle">9.3</text>
+<text x="323.0" y="216" class="tick" text-anchor="middle">3 · DIVIDE</text>
+<rect x="389.8" y="95.4" width="36" height="100.6" rx="2" class="b-vibe"><title>11.7</title></rect><text x="407.8" y="89.4" class="val" text-anchor="middle">11.7</text>
+<rect x="431.8" y="91.1" width="36" height="104.9" rx="2" class="b-oa2"><title>12.2</title></rect><text x="449.8" y="85.1" class="val" text-anchor="middle">12.2</text>
+<text x="429.8" y="216" class="tick" text-anchor="middle">4 · Limits</text>
+<rect x="496.6" y="98.0" width="36" height="98.0" rx="2" class="b-vibe"><title>11.4</title></rect><text x="514.6" y="92.0" class="val" text-anchor="middle">11.4</text>
+<rect x="538.6" y="85.9" width="36" height="110.1" rx="2" class="b-oa2"><title>12.8</title></rect><text x="556.6" y="79.9" class="val" text-anchor="middle">12.8</text>
+<text x="536.6" y="216" class="tick" text-anchor="middle">5 · API docs</text>
+<line x1="56" x2="590" y1="196" y2="196" class="axis"/></svg><figcaption>Active minutes per item. <b class="v">vibe</b> left, <b class="o">openspec</b> right.</figcaption></figure>
+    <figure><svg viewBox="0 0 600 250" role="img" aria-label="Output tokens per backlog item in thousands, items 1 to 5" class="chart">
+<line x1="56" x2="590" y1="196.0" y2="196.0" class="grid"/><text x="48" y="200.0" class="tick" text-anchor="end">0</text>
+<line x1="56" x2="590" y1="138.7" y2="138.7" class="grid"/><text x="48" y="142.7" class="tick" text-anchor="end">20k</text>
+<line x1="56" x2="590" y1="81.3" y2="81.3" class="grid"/><text x="48" y="85.3" class="tick" text-anchor="end">40k</text>
+<line x1="56" x2="590" y1="24.0" y2="24.0" class="grid"/><text x="48" y="28.0" class="tick" text-anchor="end">60k</text>
+<rect x="69.4" y="125.5" width="36" height="70.5" rx="2" class="b-vibe"><title>25k</title></rect><text x="87.4" y="119.5" class="val" text-anchor="middle">25k</text>
+<rect x="111.4" y="50.9" width="36" height="145.1" rx="2" class="b-oa2"><title>51k</title></rect><text x="129.4" y="44.9" class="val" text-anchor="middle">51k</text>
+<text x="109.4" y="216" class="tick" text-anchor="middle">1 · Skeleton</text>
+<rect x="176.2" y="98.2" width="36" height="97.8" rx="2" class="b-vibe"><title>34k</title></rect><text x="194.2" y="92.2" class="val" text-anchor="middle">34k</text>
+<rect x="218.2" y="40.9" width="36" height="155.1" rx="2" class="b-oa2"><title>54k</title></rect><text x="236.2" y="34.9" class="val" text-anchor="middle">54k</text>
+<text x="216.2" y="216" class="tick" text-anchor="middle">2 · ADD/SUB/MUL</text>
+<rect x="283.0" y="148.1" width="36" height="47.9" rx="2" class="b-vibe"><title>17k</title></rect><text x="301.0" y="142.1" class="val" text-anchor="middle">17k</text>
+<rect x="325.0" y="109.1" width="36" height="86.9" rx="2" class="b-oa2"><title>30k</title></rect><text x="343.0" y="103.1" class="val" text-anchor="middle">30k</text>
+<text x="323.0" y="216" class="tick" text-anchor="middle">3 · DIVIDE</text>
+<rect x="389.8" y="74.2" width="36" height="121.8" rx="2" class="b-vibe"><title>42k</title></rect><text x="407.8" y="68.2" class="val" text-anchor="middle">42k</text>
+<rect x="431.8" y="40.6" width="36" height="155.4" rx="2" class="b-oa2"><title>54k</title></rect><text x="449.8" y="34.6" class="val" text-anchor="middle">54k</text>
+<text x="429.8" y="216" class="tick" text-anchor="middle">4 · Limits</text>
+<rect x="496.6" y="70.2" width="36" height="125.8" rx="2" class="b-vibe"><title>44k</title></rect><text x="514.6" y="64.2" class="val" text-anchor="middle">44k</text>
+<rect x="538.6" y="29.7" width="36" height="166.3" rx="2" class="b-oa2"><title>58k</title></rect><text x="556.6" y="23.7" class="val" text-anchor="middle">58k</text>
+<text x="536.6" y="216" class="tick" text-anchor="middle">5 · API docs</text>
+<line x1="56" x2="590" y1="196" y2="196" class="axis"/></svg><figcaption>Output tokens per item (thousands), all agents included.</figcaption></figure>
+  </div>
+  <div class="scroll"><table>
+    <tr><th>Items 1–5</th><th class="n"><b class="v">vibe</b></th><th class="n"><b class="o">openspec</b></th><th class="n">ratio</th></tr>
+    <tr><td>Active minutes (items 2–5)</td><td class="n">40.1</td><td class="n">46.4</td><td class="n">1.16×</td></tr>
+    <tr><td>Active minutes (items 1–5)</td><td class="n">54.4</td><td class="n">64.9</td><td class="n">1.19×</td></tr>
+    <tr><td>Output tokens (items 2–5)</td><td class="n">137k</td><td class="n">197k</td><td class="n">1.43×</td></tr>
+    <tr><td>Output tokens (items 1–5)</td><td class="n">162k</td><td class="n">247k</td><td class="n">1.53×</td></tr>
+    <tr><td>Cache reads</td><td class="n">27.6M</td><td class="n">53.8M</td><td class="n">1.95×</td></tr>
+    <tr><td>Cache writes</td><td class="n">1,008k*</td><td class="n">1,114k</td><td class="n">1.11×</td></tr>
+    <tr><td>Tool calls</td><td class="n">213</td><td class="n">302</td><td class="n">1.42×</td></tr>
+    <tr><td>Subagent runs (the two <code>/code-review</code> sub-agents per item)</td><td class="n">10</td><td class="n">10</td><td class="n">1.00×</td></tr>
+  </table></div>
+  <p style="font-size:13px;color:var(--muted)">* The vibe session paused for 8.5 hours before item 5, so the cache expired and item 5 rewrote 382k tokens of context. Without that pause, vibe's cache writes would be lower and the ratio higher.</p>
+  <div class="scroll"><table>
+    <tr><th>Across the two backlogs, items 2–5</th><th class="n"><b class="v">vibe</b> min</th><th class="n"><b class="o">openspec</b> min</th><th class="n">time ratio</th><th class="n">token ratio</th></tr>
+    <tr><td>Task backlog (design given in the prompt)</td><td class="n">32.6</td><td class="n">49.6</td><td class="n">1.52×</td><td class="n">1.39×</td></tr>
+    <tr><td>Outcome backlog (builder chooses the design)</td><td class="n">40.1</td><td class="n">46.4</td><td class="n">1.16×</td><td class="n">1.43×</td></tr>
+  </table></div>
+  <p>The vibe build got 23% slower once it had to design for itself. The OpenSpec build barely changed, because its propose step already did that design work with the task backlog, when the prompt had partly done it too. Output tokens went the other way: OpenSpec still writes about 40% more text, mostly proposal, design, spec and task files that the vibe build never writes.</p>
+</section>
+
+<section>
+  <div class="eyebrow">Reviews</div>
+  <h2>What the reviews caught</h2>
+  <div class="cols">
+    <div>
+      <h3><b class="v">vibe</b>: findings by source</h3>
+      <div class="scroll"><table>
+        <tr><th>Item</th><th class="n">Ponytail</th><th class="n">Standards</th><th class="n">Spec</th><th class="n">Total</th></tr>
+        <tr><td>1</td><td class="n">2</td><td class="n">8</td><td class="n">6</td><td class="n">16</td></tr>
+        <tr><td>2</td><td class="n">2</td><td class="n">8</td><td class="n">4</td><td class="n">14</td></tr>
+        <tr><td>3</td><td class="n">0</td><td class="n">4</td><td class="n">2</td><td class="n">6</td></tr>
+        <tr><td>4</td><td class="n">1</td><td class="n">9</td><td class="n">5</td><td class="n">15</td></tr>
+        <tr><td>5</td><td class="n">1</td><td class="n">8</td><td class="n">7</td><td class="n">17*</td></tr>
+        <tr><td>Total</td><td class="n">6</td><td class="n">37</td><td class="n">24</td><td class="n">68</td></tr>
+      </table></div>
+      <p style="font-size:13px;color:var(--muted)">* Includes one the agent found itself before review, by reading the generated spec.</p>
+    </div>
+    <div>
+      <h3><b class="o">openspec</b>: findings by source</h3>
+      <div class="scroll"><table>
+        <tr><th>Item</th><th class="n">Verify</th><th class="n">Ponytail</th><th class="n">Standards</th><th class="n">Spec</th><th class="n">Total</th></tr>
+        <tr><td>1</td><td class="n">3</td><td class="n">4</td><td class="n">7</td><td class="n">4</td><td class="n">18</td></tr>
+        <tr><td>2</td><td class="n">2</td><td class="n">2</td><td class="n">7</td><td class="n">5</td><td class="n">16</td></tr>
+        <tr><td>3</td><td class="n">1</td><td class="n">0</td><td class="n">5</td><td class="n">1</td><td class="n">7</td></tr>
+        <tr><td>4</td><td class="n">1</td><td class="n">2</td><td class="n">7</td><td class="n">6</td><td class="n">16</td></tr>
+        <tr><td>5</td><td class="n">1</td><td class="n">1</td><td class="n">7</td><td class="n">8</td><td class="n">17</td></tr>
+        <tr><td>Total</td><td class="n">8</td><td class="n">9</td><td class="n">33</td><td class="n">24</td><td class="n">74</td></tr>
+      </table></div>
+    </div>
+  </div>
+  <p>Counted from the "Caught by review" sections of the retros, one per bullet, so a finding raised by two reviewers counts twice. The <code>/code-review</code> sub-agents did most of the work in both builds, and found about the same amount in each.</p>
+  <h3>Caught in both</h3>
+  <ul>
+    <li><b>Item 2, ponytail:</b> unplanned exceptions fell through to Spring Boot's <code>/error</code> JSON, not Problem Details. Both builds reproduced it with the same scale-overflow multiply, and both added a catch-all 500.</li>
+    <li><b>Item 5, standards (hard):</b> BR-1 limits copied into OpenAPI annotations, against STANDARDS §4. Both fixed it by generating the text from domain constants.</li>
+    <li><b>Item 5:</b> springdoc's <code>ProblemDetail</code> schema has a <code>properties</code> field that Spring never sends. The vibe agent found it by reading the spec JSON. In the OpenSpec build, the spec reviewer found it.</li>
+  </ul>
+  <h3>Caught only in <b class="o">openspec</b></h3>
+  <ul>
+    <li><b>Framework errors carry no <code>type</code></b> (404, 405, 406, 415). PRD §3.2 says every error has one. <code>/opsx:verify</code> asked for the 405 and 415 bodies to go through the same Problem Details checks, and the tighter tests then failed on <code>$.type</code>. The vibe build left the field out on purpose (retro 2: "framework errors have no PRD type"). That is valid under RFC 9457, but it isn't what the PRD says.</li>
+    <li><b><code>"operation": 123</code> coerced to the string <code>"123"</code></b> and reported as unknown-operation. The OpenSpec spec reviewer confirmed it against the running app, and the fix was a Jackson coercion config. The vibe build still does this. Its spec reviewer has the same brief, so this one comes down to chance, not to OpenSpec. It was the vibe reviewer that caught this in the task-backlog round.</li>
+    <li><b>Body limit in UTF-16 units and the wrong charset</b> (item 4, spec reviewer). This only applied because the OpenSpec build kept "characters" and wrote its own counter. The vibe build changed the PRD to bytes and let Jackson count.</li>
+    <li><b>"From the docs alone" read literally</b> (item 5, spec reviewer): the docs pointed readers to "BR-3" and "PRD §3.2 order". They now state each rule. A few BR ids are still left in example summaries, although <code>statesTheRulesAClientNeeds</code> says none remain. That test checks the description, not the examples.</li>
+  </ul>
+  <h3>Caught only in <b class="v">vibe</b></h3>
+  <ul>
+    <li><b>Hand-written examples could drift from real responses</b> (item 5, ponytail). The vibe build added a test that replays every example and compares the whole body, and on its first run it found the 415 example was wrong. The OpenSpec build built its examples from exception messages, then added a replay test as a backstop.</li>
+    <li><b>Undocumented 406</b> (item 5, spec reviewer). It's now documented with a checked example. OpenSpec documents 404, 405, 415 and 500 only in prose, with no response entries.</li>
+  </ul>
+  <h3>What <code>/opsx:verify</code> added</h3>
+  <p>It made 8 findings over five items. Five were the same process artefact: "the CI task isn't ticked", which is true of every item until the PR runs. The other three were a hand check standing in for a formatting test, a redundant ArchUnit rule, and the 405/415 assertion gap that led to the missing <code>type</code>. That last one is the only verify finding that changed behaviour. Verify ran in the main session, so its cost is part of OpenSpec's extra time.</p>
+</section>
+
+<section>
+  <div class="eyebrow">The repeat bug</div>
+  <h2><code>Math.abs(scale)</code>, third build in a row</h2>
+  <div class="callout alert">
+    <p>BR-1 caps an Operand's scale at ±1000. <code>new BigDecimal("1E+2147483648")</code> has scale <code>Integer.MIN_VALUE</code>, and <code>Math.abs</code> of that is still negative, so a <code>Math.abs(scale) &gt; 1000</code> check lets it through. All four builds so far wrote that line: both task-backlog builds and both outcome-backlog builds.</p>
+  </div>
+  <ul>
+    <li><b class="o">openspec</b>: <code>design.md</code> said <code>-1000 &lt;= scale() &lt;= 1000</code>. The agent wrote <code>Math.abs</code> anyway. Seconds after the domain tests passed, it noted "I found a bug in my own code", confirmed it with a one-line Java program, and fixed it with a test. Last time the code reviews caught it. This time no review needed to.</li>
+    <li><b class="v">vibe</b>: shipped with <code>Math.abs(operand.scale()) &gt; MAX_SCALE</code> in <code>Calculation</code>. None of its three reviews flagged it. Over HTTP it can't be reached on this stack: Jackson 3 rejects <code>1E+2147483648</code> (as a string or a number) while parsing, so both jars return 400 invalid-request. It is a latent domain bug, which turns live if the parser ever passes such a value through. In the task-backlog round, the same input reached the domain and returned 500.</li>
+  </ul>
+  <p>It's one data point, but it points the same way as last time. Having the rule written down as two comparisons is what got the agent to notice it had written something else. Neither build's reviewers found the bug on their own in either round.</p>
+</section>
+
+<section>
+  <div class="eyebrow">Code</div>
+  <h2>Code and static analysis</h2>
+  <p>Both builds reached the same overall shape again. They have domain / application / adapter.in.web / config layers enforced by ArchUnit, an <code>Operation</code> enum as the only place an Operation is defined, BR-1 checked in the <code>Calculation</code> record, one exception advice with a catch-all 500, and OpenAPI text generated from domain constants. They differ in a few places:</p>
+  <div class="scroll"><table>
+    <tr><th></th><th><b class="v">vibe</b></th><th><b class="o">openspec</b></th></tr>
+    <tr><td>Operation</td><td>One abstract <code>apply</code> per constant; no <code>arity()</code> yet (deferred to item 7)</td><td><code>(arity, lambda)</code> constructor; <code>arity()</code> and nullable <code>b</code> already there (DOMAIN-MODEL lists them)</td></tr>
+    <tr><td>Request limits</td><td>One yaml block of <code>spring.jackson.factory.constraints.read.*</code>; the PRD changed to "16,384 bytes"</td><td><code>RequestBodyLimit</code> (64 lines): reads up to 64 KB and counts code points in the declared charset; the PRD is unchanged</td></tr>
+    <tr><td>Strict JSON types</td><td>Jackson defaults (numbers coerced into <code>operation</code>)</td><td><code>JacksonConfig</code>: number and boolean → text coercion fails</td></tr>
+    <tr><td>Framework error <code>type</code></td><td>Omitted (RFC 9457 absent = <code>about:blank</code>)</td><td>Written as <code>about:blank</code></td></tr>
+    <tr><td>Architecture tests</td><td>Layer rules</td><td>Layer rules plus a violating fixture per rule, proving each can fail</td></tr>
+    <tr><td>Production Java (lines / files)</td><td class="n">602 / 15</td><td class="n">704 / 17</td></tr>
+    <tr><td>Test Java (lines / files)</td><td class="n">817 / 10</td><td class="n">955 / 13</td></tr>
+    <tr><td>Tests run (all green)</td><td class="n">102</td><td class="n">127</td></tr>
+    <tr><td>Dependencies (main / test)</td><td class="n">4 / 2</td><td class="n">4 / 3</td></tr>
+  </table></div>
+  <h3>SonarQube 26.9, "Sonar way" profile (599 rules), JaCoCo coverage</h3>
+  <div class="scroll"><table>
+    <tr><th>Metric</th><th class="n"><b class="v">vibe</b></th><th class="n"><b class="o">openspec</b></th><th></th></tr>
+    <tr><td>Quality gate</td><td class="n">Passed</td><td class="n">Passed</td><td><span class="win t">tie</span></td></tr>
+    <tr><td>Bugs / vulnerabilities / security hotspots</td><td class="n">0 / 0 / 0</td><td class="n">0 / 0 / 0</td><td><span class="win t">tie</span></td></tr>
+    <tr><td>Code smells / technical debt</td><td class="n">1 / 8 min</td><td class="n">1 / 20 min</td><td><span class="win t">tie</span> vibe: <code>"/api/v1/calculations"</code> repeated 3× in OpenApiConfig (S1192, critical). openspec: hard-coded URI (S1075, minor)</td></tr>
+    <tr><td>Duplicated lines</td><td class="n">0.0%</td><td class="n">0.0%</td><td><span class="win t">tie</span></td></tr>
+    <tr><td>ncloc</td><td class="n">474</td><td class="n">555</td><td><span class="win v">vibe</span> the difference is mostly <code>RequestBodyLimit</code>, <code>JacksonConfig</code> and arity</td></tr>
+    <tr><td>Line coverage</td><td class="n">98.1%</td><td class="n">98.8%</td><td><span class="win t">tie</span></td></tr>
+    <tr><td>Branch coverage</td><td class="n">95.0%</td><td class="n">82.5%</td><td><span class="win v">vibe</span></td></tr>
+    <tr><td>Cyclomatic / cognitive complexity</td><td class="n">49 / 10</td><td class="n">69 / 24</td><td><span class="win v">vibe</span></td></tr>
+  </table></div>
+  <p>This turns round the task-backlog result, where the vibe build was 41% larger and OpenSpec led on branch coverage, 94% to 80%. OpenSpec's 7 missed branches are all defensive or for later: the unary arity path (no unary Operation yet), the charset fallbacks in <code>RequestBodyLimit</code>, and three guard branches in <code>ProblemDetailsAdvice</code> (a body that is not a ProblemDetail, a Jackson limit exception with no message, an unmapped limit message). Vibe's single missed branch is its "breaks a size limit" fallback, which its retro says should only fire after a Jackson upgrade. Neither gap hides a known bug.</p>
+</section>
+
+<section>
+  <div class="eyebrow">Behaviour</div>
+  <h2>Both jars, same 45 requests</h2>
+  <p>The same requests went to both jars over HTTP. They covered happy paths, rounding, every error type, the BR-1 boundaries, the <code>Integer.MIN_VALUE</code> scale, request and parse limits, malformed input, framework errors and the docs endpoints. Status and Problem Details <code>type</code> matched on 38 of 45. These are the differences:</p>
+  <div class="scroll"><table>
+    <tr><th>Request</th><th><b class="v">vibe</b></th><th><b class="o">openspec</b></th><th>Better</th></tr>
+    <tr><td>404, 405, 406, 415 (4 probes)</td><td>No <code>type</code> field</td><td><code>"type": "about:blank"</code></td><td><span class="win o">openspec</span> PRD: every error has <code>type</code></td></tr>
+    <tr><td><code>"operation": 123</code> or <code>true</code></td><td>400 unknown-operation</td><td>400 invalid-request</td><td><span class="win o">openspec</span> stricter typing</td></tr>
+    <tr><td>Body of 14,925 characters, 24,925 bytes (non-ASCII)</td><td>400 invalid-request: "larger than 16384 bytes"</td><td>200</td><td><span class="win t">choice</span> each matches its own PRD; vibe changed the PRD to bytes</td></tr>
+  </table></div>
+  <p>Detail wording also differs, though status and type agree. The vibe build is more specific: "Missing or empty field(s): 'b'", "has more than 100 significant digits", and separate details for strings and numbers. The OpenSpec build gives one BR-1 detail that lists both limits, and reports a missing <code>b</code> as an arity error ("ADD takes exactly 2 operand(s)").</p>
+  <p>The two behaved the same on the rest, including two shared gaps: a field name of 1,001 characters is accepted by both (PRD §3.2 caps "any JSON string"), and an exponent beyond <code>int</code> range gets the generic invalid-request detail instead of operand-out-of-range in both. Both retros record the second one as accepted.</p>
+</section>
+
+<section>
+  <div class="eyebrow">Spec drift</div>
+  <h2>How often the plan was right</h2>
+  <p>Only the OpenSpec build has a plan to drift from, and its retros record each change. The plan changed in 4 of 5 items:</p>
+  <div class="scroll"><table>
+    <tr><th>Item</th><th>Added after the plan</th><th>Found by</th></tr>
+    <tr><td>1</td><td>A liveness and readiness requirement (Boot 4 gives it for free; the design had called it a non-goal)</td><td>Standards reviewer</td></tr>
+    <tr><td>2</td><td>3 scenarios: operation not a string, unexpected failure, framework errors carry a type</td><td>Spec reviewer, ponytail, verify</td></tr>
+    <tr><td>3</td><td>None (design detail only)</td><td>—</td></tr>
+    <tr><td>4</td><td>3 scenarios: code points not UTF-16 units, declared charset, a huge body not read whole</td><td>Spec reviewer</td></tr>
+    <tr><td>5</td><td>4 requirements or scenarios, including "the rules are stated, not referenced"</td><td>Spec reviewer</td></tr>
+  </table></div>
+  <p>The code reviews corrected the plan, not the other way round. Eleven scenarios were added after review. The OpenSpec retro for item 4 says so itself: "Characters in a contract needs pinning down … at propose time, not in review". With no plan review in this process, the plan is checked only once the code exists.</p>
+</section>
+
+<section>
+  <div class="eyebrow">Retrospectives</div>
+  <h2>What each build learned</h2>
+  <div class="cols">
+    <div>
+      <h3><b class="v">vibe</b></h3>
+      <ul>
+        <li>Add only what a "done when" check needs (item 1: validation starter, layer marker files).</li>
+        <li>Write tests first and watch them fail. It started from item 3, and from item 4 the red step had to be a failing assertion, not just a compile error.</li>
+        <li>Probe the running jar with hostile input during the build (items 2, 4), also with a small heap.</li>
+        <li>Check docs against real responses, not against themselves (item 5).</li>
+      </ul>
+    </div>
+    <div>
+      <h3><b class="o">openspec</b></h3>
+      <ul>
+        <li>Check what the framework already does before writing a non-goal (item 1).</li>
+        <li>Probe the running app with hostile-but-valid JSON during apply (item 2).</li>
+        <li>When a check guards an <code>int</code>, test <code>Integer.MIN_VALUE</code> (item 4).</li>
+        <li>Pin down "characters" at propose time (item 4). Read the outcome literally (item 5).</li>
+      </ul>
+    </div>
+  </div>
+  <p>The lesson both builds recorded most was the same as in the task-backlog round: probe the running app, and don't trust framework defaults (Spring 7, Jackson 3, springdoc). OpenSpec's propose step didn't prevent those surprises. They showed up in tests or probes in both builds. Neither build has written its probing habit into a test or a process step, so each new session relearns it.</p>
+</section>
+
+<section>
+  <div class="eyebrow">Caveats</div>
+  <h2>What makes this comparison unfair</h2>
+  <ul>
+    <li><b>One run each.</b> The same model can write a bug and then catch it or miss it by chance. The coercion catch went to vibe last round and to OpenSpec this round, with the same reviewer brief.</li>
+    <li><b>Not a clean sample.</b> Both outcome builds came after two task-backlog builds made from the same docs, and those docs already contained many of their decisions. The OpenSpec build also started after the vibe build was finished.</li>
+    <li><b>Different session shapes.</b> The vibe session paused for 8.5 hours before item 5, so its cache expired. Item 1 in both builds includes some one-off process and repo setup.</li>
+    <li><b>The findings tally counts bullets.</b> It shows how much each build looked at, not how many bugs each found.</li>
+    <li><b>No plan review.</b> Unlike the earlier OpenSpec build, this process has no review of the proposal before apply, so the plan got its first critical read only after the code was written.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="eyebrow">Takeaways</div>
+  <h2>So, does OpenSpec add more with an outcome backlog?</h2>
+  <ul>
+    <li><b>A little more, at a lower relative time cost.</b> When the backlog leaves the design open, the vibe build pays for design too. OpenSpec's time overhead fell from 52% to 16%, but its token overhead stayed at about 40%.</li>
+    <li><b>The written design keeps paying off on exact rules.</b> In both rounds, the only build to fix the BR-1 bug was the one whose design stated the rule as two comparisons.</li>
+    <li><b>The PRD was followed more literally.</b> OpenSpec kept "characters" and wrote code for it. The vibe build changed the contract to fit Jackson. Both are allowed by CLAUDE.md, but they are different kinds of decision. A vibe build is more likely to bend the spec to the tool.</li>
+    <li><b><code>/opsx:verify</code> did little:</b> one behavioural catch in five items, plus a recurring false alarm about the CI task. Changing its brief or the order of steps would remove the false alarm.</li>
+    <li><b>The plan is only as good as its review.</b> Eleven scenarios were added after code review. Bringing back a plan review, or asking propose to settle units and boundaries such as "characters" and int limits, is the cheapest way to make the plan do more.</li>
+    <li><b>Follow-ups for the vibe build:</b> replace <code>Math.abs</code> with a two-sided range check and test it at <code>1E+2147483648</code> in the domain; add <code>type</code> to framework errors, or record the RFC reading in the PRD; decide whether <code>"operation": 123</code> should be invalid-request. <b>For the OpenSpec build:</b> remove the leftover BR ids from example summaries and extend <code>statesTheRulesAClientNeeds</code> to cover examples.</li>
+  </ul>
+</section>
+
+<footer>
+  <p><b>Sources.</b> Session logs <code>66801a1a…</code> (vibe) and <code>9ae9fb89…</code> (openspec), each with its review subagent transcripts, split at each <code>start item N</code> and measured with one script. Also used:</p>
+  <ul>
+    <li>the five retrospectives in each repo, and the OpenSpec change archive</li>
+    <li>git trees at <code>d0510d5</code> and <code>28bd284</code></li>
+    <li>JUnit and JaCoCo XML from fresh <code>./gradlew clean build</code> runs (JaCoCo applied by an init script, because neither build includes it)</li>
+    <li>SonarQube 26.9 analyses of both trees with the default "Sonar way" profile</li>
+    <li>45 identical HTTP probes against both boot jars, and the served <code>/v3/api-docs</code> from each</li>
+    <li>the earlier comparison in <code>math-api-vibe-coded/reports/comparison/vibe-vs-openspec.html</code>, for the task-backlog figures</li>
+  </ul>
+</footer>
+
+</div>
