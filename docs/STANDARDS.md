@@ -84,7 +84,7 @@ Write tests first (red → green → refactor).
 
 ## 7. Workflow
 
-- Every change is one backlog item, run end to end without pausing (see `CLAUDE.md`): propose an OpenSpec change from the item's outcome (`/opsx:propose`), implement it (`/opsx:apply`), review the code (`/opsx:verify`, `/ponytail:ponytail-review` and `/code-review`), fix the review findings, archive the change (`/opsx:archive`), write a retrospective in `retrospectives/`, then open a PR and squash merge on green CI.
+- Every change is one backlog item, run end to end without pausing (see `CLAUDE.md`): propose an OpenSpec change from the item's outcome (`/opsx:propose`), implement it (`/opsx:apply`), review the code (`/opsx:verify`, `/ponytail:ponytail-review` and `/code-review`), fix the review findings, open a draft PR so CI runs, archive the change (`/opsx:archive`), write a retrospective in `retrospectives/`, then mark the PR ready and squash merge on green CI.
 - Commits follow Conventional Commits (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:`).
 - Hosted on GitHub. PRs use `.github/pull_request_template.md`.
 - CI (GitHub Actions, `.github/workflows/build.yml`) MUST run `./gradlew build` (tests, ArchUnit, Spotless) on every PR and push to `main`.
@@ -104,3 +104,4 @@ Write tests first (red → green → refactor).
 |------|--------|
 | 2026-11-10 | Copied from math-api (its final v1 docs) for the one-agent rerun with reviews from the start |
 | 2026-11-14 | §7: each backlog item goes through OpenSpec (propose → apply → verify → archive) and runs end to end without pausing |
+| 2026-11-14 | §7: open the PR as a draft before archive, so the CI task can be ticked first (retro 1) |

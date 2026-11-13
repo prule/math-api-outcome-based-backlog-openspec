@@ -19,14 +19,16 @@ matching doc in `docs/` in the same change, including its change log. Never renu
 One backlog item at a time, on a branch `feat/<item>` from an up-to-date `main`. The OpenSpec change is named
 `<n>-<item>` (e.g. `1-walking-skeleton`).
 
-Run all seven steps in one go, from the user's prompt to the merged PR, without pausing between steps. Stop and ask
+Run all eight steps in one go, from the user's prompt to the merged PR, without pausing between steps. Stop and ask
 only when you cannot go on without the user:
 - a review finding is a real trade-off with no clear answer in the docs (fix the clear ones, then ask about the rest);
 - the item's outcome is ambiguous, or meeting it needs a change to the PRD, the domain rules or the standards that
   the item does not already call for;
 - CI or the build fails and you cannot find the cause.
 
-A finding you choose not to fix is not a reason to stop: give the reason in the retro.
+A finding you choose not to fix is not a reason to stop: give the reason in the retro. The `/opsx:*` skills say to
+stop for confirmation (after propose, before each update edit); this process overrides that, so run them straight
+through.
 
 1. **Propose**: the user prompts with the item's outcome from `docs/BACKLOG.md`. Run `/opsx:propose` with it to
    write `openspec/changes/<n>-<item>/` (proposal, design, spec deltas, tasks). You choose the design, within
@@ -40,9 +42,11 @@ A finding you choose not to fix is not a reason to stop: give the reason in the 
    - `/code-review`: does it follow `docs/STANDARDS.md` and achieve the backlog item's outcome?
 4. **Fix**: fix every finding from any review (or record in the retro why not), rerun `./gradlew build`. If a fix
    changes the behaviour, update the change's spec deltas and tasks to match (`/opsx:update`).
-5. **Archive**: run `/opsx:archive` so the spec deltas merge into `openspec/specs/` and the change moves to
+5. **Draft PR**: commit (Conventional Commits), push, and open a draft PR so CI runs on it. Tick the change's CI
+   task once the PR's check is green; archive needs every task ticked.
+6. **Archive**: run `/opsx:archive` so the spec deltas merge into `openspec/specs/` and the change moves to
    `openspec/changes/archive/`.
-6. **Retro**: run `/ponytail:ponytail-debt`, then write `retrospectives/<n>-<item>.md` with five sections:
+7. **Retro**: run `/ponytail:ponytail-debt`, then write `retrospectives/<n>-<item>.md` with five sections:
    - **Caught by review**: each finding from the three reviews and how it was fixed, or why it was not.
    - **Surprises**: each failed check or bug found while building, with its cause, or "cause unknown".
    - **Spec drift**: each place the code had to differ from the proposed specs, design or tasks, and why.
@@ -50,5 +54,6 @@ A finding you choose not to fix is not a reason to stop: give the reason in the 
    - **Lessons**: what to do differently next time.
 
    Write "None" under a section with nothing to report.
-7. **PR**: commit (Conventional Commits) the code, the archived change, the updated specs and the retro together,
-   push, open a PR filling in `.github/pull_request_template.md`, squash merge once CI is green.
+8. **PR**: set the backlog item to Done, commit the archived change, the updated specs and the retro, push, fill in
+   the PR body from `.github/pull_request_template.md`, mark the PR ready and turn on squash auto-merge so it merges
+   once CI is green on the last commit.
