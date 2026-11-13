@@ -24,9 +24,10 @@ rules and tests, plus a domain exception and handler for a new kind of failure. 
   every Operation.
 - **Failure order (PRD §3.2)** holds with no new code: BR-9 is checked in the `Calculation` constructor, BR-2 in
   `apply`, which runs later in `result()`. Item 4 adds BR-1 to the constructor, so it will also precede BR-2.
-- **422 handler** in `ProblemDetailsAdvice`: `type` `/problems/division-by-zero`, title "Division by zero", fixed
-  detail "Cannot divide by zero." (STANDARDS.md §4: 422 for valid input that breaks a domain rule).
-- **Tests**: domain tests for every DOMAIN-MODEL.md §3 DIVIDE edge case plus HALF_EVEN ties (35-digit Operands
+- **422 handler** in `ProblemDetailsAdvice`: `type` `/problems/division-by-zero`, title "Division by zero",
+  `detail` from the exception's own client-safe message "Cannot divide by zero.", as the arity handler does, so the
+  rule's wording lives in one place (STANDARDS.md §4: 422 for valid input that breaks a domain rule).
+- **Tests**: domain tests in `CalculationTest` (one home for Operation tests) for every DOMAIN-MODEL.md §3 DIVIDE edge case plus HALF_EVEN ties (35-digit Operands
   divided by 1 force a tie at the 35th digit); web tests for a rounded Result, an exact one, every zero form and
   the BR-9-before-BR-2 order. The unchanged ADD/SUBTRACT/MULTIPLY tests are the "changed nothing" check; the
   unknown-operation web test gains `DIVIDE`.

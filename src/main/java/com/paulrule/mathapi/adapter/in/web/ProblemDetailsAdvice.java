@@ -79,8 +79,7 @@ class ProblemDetailsAdvice extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler
     ProblemDetail divisionByZero(DivisionByZeroException ex) {
-        return problem(
-                HttpStatus.UNPROCESSABLE_CONTENT, "division-by-zero", "Division by zero", "Cannot divide by zero.");
+        return problem(HttpStatus.UNPROCESSABLE_CONTENT, "division-by-zero", "Division by zero", ex.getMessage());
     }
 
     /** Anything unplanned is still Problem Details, and says nothing about why. */
