@@ -10,7 +10,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 class OperationTest {
 
     @ParameterizedTest
-    @ValueSource(strings = {"ADD", "SUBTRACT", "MULTIPLY"})
+    @ValueSource(strings = {"ADD", "SUBTRACT", "MULTIPLY", "DIVIDE"})
     void resolvesExactNames(String name) {
         assertThat(Operation.named(name).name()).isEqualTo(name);
     }
@@ -23,7 +23,7 @@ class OperationTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"ADD", "SUBTRACT", "MULTIPLY"})
+    @ValueSource(strings = {"ADD", "SUBTRACT", "MULTIPLY", "DIVIDE"})
     void basicOperationsAreBinary(String name) {
         assertThat(Operation.named(name).arity()).isEqualTo(2);
     }

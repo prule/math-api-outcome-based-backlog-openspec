@@ -103,6 +103,28 @@ class CalculationControllerTest {
                         {"operation": "MULTIPLY", "a": "1E+3", "b": "1"}""").andExpect(status().isOk()).andExpect(jsonPath("$.result").value("1000"));
     }
 
+    @ParameterizedTest // BR-3, BR-4
+    @CsvSource({"1, 3, 0.3333333333333333333333333333333333", "1, 4, 0.25", "\"1.50\", \"-0.5\", -3"})
+    void dividesRoundingToThirtyFourSignificantDigits(String a, String b, String result) throws Exception {
+        calculate("""
+                        {"operation": "DIVIDE", "a": %s, "b": %s}""".formatted(a, b))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value(result));
+    }
+
+    @ParameterizedTest // BR-2
+    @ValueSource(strings = {"0", "0.00", "-0", "\"0E+5\""})
+    void rejectsDivisionByAnyZero(String zero) throws Exception {
+        expectProblem(calculate("""
+                {"operation": "DIVIDE", "a": 1, "b": %s}""".formatted(zero)), 422, "division-by-zero");
+    }
+
+    @Test // PRD §3.2 failure order: operand count (BR-9) before division by zero (BR-2)
+    void divideWithoutBIsAnInvalidRequest() throws Exception {
+        expectProblem(calculate("""
+                {"operation": "DIVIDE", "a": 1}"""), 400, "invalid-request");
+    }
+
     @ParameterizedTest
     @ValueSource(
             strings = {
@@ -129,7 +151,11 @@ class CalculationControllerTest {
 
         expectProblem(result, 400, "unknown-operation");
         result.andExpect(jsonPath("$.detail")
-                .value(allOf(containsString("ADD"), containsString("SUBTRACT"), containsString("MULTIPLY"))));
+                .value(allOf(
+                        containsString("ADD"),
+                        containsString("SUBTRACT"),
+                        containsString("MULTIPLY"),
+                        containsString("DIVIDE"))));
     }
 
     @Test // PRD §3.2 failure order: unknown operation before operand count (BR-9)
