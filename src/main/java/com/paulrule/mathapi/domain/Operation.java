@@ -1,13 +1,20 @@
 package com.paulrule.mathapi.domain;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.function.BinaryOperator;
 
 /** The closed set of arithmetic functions (DOMAIN-MODEL.md §3). */
 public enum Operation {
     ADD(2, BigDecimal::add),
     SUBTRACT(2, BigDecimal::subtract),
-    MULTIPLY(2, BigDecimal::multiply);
+    MULTIPLY(2, BigDecimal::multiply),
+    DIVIDE(2, (a, b) -> {
+        if (b.signum() == 0) { // BR-2: every zero representation
+            throw new DivisionByZeroException();
+        }
+        return a.divide(b, MathContext.DECIMAL128); // BR-3
+    });
 
     private final int arity;
     private final BinaryOperator<BigDecimal> function;

@@ -1,6 +1,7 @@
 package com.paulrule.mathapi.adapter.in.web;
 
 import com.paulrule.mathapi.domain.ArityMismatchException;
+import com.paulrule.mathapi.domain.DivisionByZeroException;
 import com.paulrule.mathapi.domain.Operation;
 import com.paulrule.mathapi.domain.UnknownOperationException;
 import java.net.URI;
@@ -74,6 +75,12 @@ class ProblemDetailsAdvice extends ResponseEntityExceptionHandler {
     @ExceptionHandler
     ProblemDetail arityMismatch(ArityMismatchException ex) {
         return invalidRequest(ex.getMessage());
+    }
+
+    @ExceptionHandler
+    ProblemDetail divisionByZero(DivisionByZeroException ex) {
+        return problem(
+                HttpStatus.UNPROCESSABLE_CONTENT, "division-by-zero", "Division by zero", "Cannot divide by zero.");
     }
 
     /** Anything unplanned is still Problem Details, and says nothing about why. */
