@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +54,10 @@ class ApiDocumentationTest {
         return node.propertyNames().stream().toList();
     }
 
+    private static List<String> strings(JsonNode array) {
+        return array.valueStream().map(JsonNode::asString).toList();
+    }
+
     @Test
     void servesAnOpenApi31DocumentListingTheCalculationsEndpoint() {
         assertThat(docs.get("openapi").asString()).startsWith("3.1");
@@ -69,24 +72,42 @@ class ApiDocumentationTest {
 
     @Test
     void documentsExactlyTheOperationsTheDomainSupports() {
-        var documented = StreamSupport.stream(
-                        schema("CalculationRequest")
-                                .at("/properties/operation/enum")
-                                .spliterator(),
-                        false)
-                .map(JsonNode::asString)
-                .toList();
-
-        assertThat(documented)
+        assertThat(strings(schema("CalculationRequest").at("/properties/operation/enum")))
                 .containsExactlyElementsOf(
                         Arrays.stream(Operation.values()).map(Operation::name).toList());
+    }
+
+    /** Not a tautology: the documented names are sent to the API, which must accept each one. */
+    @Test
+    void everyDocumentedOperationIsAccepted() throws Exception {
+        for (var operation : strings(schema("CalculationRequest").at("/properties/operation/enum"))) {
+            mvc.perform(post("/api/v1/calculations")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"operation\": \"" + operation + "\", \"a\": 6, \"b\": 3}"))
+                    .andExpect(status().isOk());
+        }
+    }
+
+    /** "From the docs alone": the rules are stated with the numbers the code enforces, not BR or PRD references. */
+    @Test
+    void statesTheRulesAClientNeeds() {
+        assertThat(calculate.get("description").asString())
+                .contains(
+                        "34 significant digits",
+                        "HALF_EVEN",
+                        "at most 100 significant digits",
+                        "scale between -1000 and 1000",
+                        "at most 16,384 characters",
+                        "at most 1,000 characters",
+                        "at most 500 levels",
+                        "invalid request, unknown operation, operand count, operand out of range, division by zero")
+                .doesNotContain("BR-", "PRD");
     }
 
     @Test
     void documentsOperandsAsNumberOrString() {
         for (var operand : List.of("a", "b")) {
-            var types = schema("CalculationRequest").at("/properties/" + operand + "/type");
-            assertThat(types.valueStream().map(JsonNode::asString).toList())
+            assertThat(strings(schema("CalculationRequest").at("/properties/" + operand + "/type")))
                     .as(operand)
                     .containsExactlyInAnyOrder("number", "string");
         }
@@ -99,10 +120,11 @@ class ApiDocumentationTest {
         var ok = calculate.at("/responses/200/content");
         assertThat(names(ok)).containsExactly("application/json");
 
-        var properties = schema("CalculationResponse").get("properties");
-        assertThat(names(properties)).containsExactlyInAnyOrder("operation", "a", "b", "result");
-        properties.forEach(
-                property -> assertThat(property.get("type").asString()).isEqualTo("string"));
+        var response = schema("CalculationResponse");
+        assertThat(names(response.get("properties"))).containsExactlyInAnyOrder("operation", "a", "b", "result");
+        response.get("properties")
+                .forEach(property -> assertThat(property.get("type").asString()).isEqualTo("string"));
+        assertThat(strings(response.get("required"))).containsExactlyInAnyOrder("operation", "a", "b", "result");
         assertThat(names(ok.at("/application~1json/examples"))).isNotEmpty();
     }
 
@@ -123,28 +145,31 @@ class ApiDocumentationTest {
         });
     }
 
+    @Test
+    void describesProblemDetailsAsTheApiSendsThem() {
+        var properties = schema("ProblemDetail").get("properties");
+        assertThat(names(properties)).doesNotContain("properties");
+        assertThat(properties.at("/type/format").asString()).isEqualTo("uri-reference");
+        assertThat(properties.at("/instance/format").asString()).isEqualTo("uri-reference");
+    }
+
     /** Each named request example, sent to the API, returns exactly the response example of the same name. */
     @Test
     void everyExampleIsWhatTheApiReallySends() throws Exception {
+        Map<String, Expected> expected = new HashMap<>();
+        calculate.get("responses").properties().forEach(response -> {
+            int status = Integer.parseInt(response.getKey());
+            response.getValue()
+                    .get("content")
+                    .forEach(media -> media.get("examples")
+                            .properties()
+                            .forEach(example -> expected.put(
+                                    example.getKey(),
+                                    new Expected(status, example.getValue().get("value")))));
+        });
         var requests = calculate.at("/requestBody/content/application~1json/examples");
-        Map<String, Integer> statusOf = new HashMap<>();
-        Map<String, JsonNode> responseOf = new HashMap<>();
-        calculate
-                .get("responses")
-                .properties()
-                .forEach(response -> response.getValue()
-                        .get("content")
-                        .properties()
-                        .forEach(media -> media.getValue()
-                                .get("examples")
-                                .properties()
-                                .forEach(example -> {
-                                    statusOf.put(example.getKey(), Integer.valueOf(response.getKey()));
-                                    responseOf.put(
-                                            example.getKey(), example.getValue().get("value"));
-                                })));
 
-        assertThat(names(requests)).containsExactlyInAnyOrderElementsOf(responseOf.keySet());
+        assertThat(names(requests)).containsExactlyInAnyOrderElementsOf(expected.keySet());
         for (var name : names(requests)) {
             var sent = mvc.perform(post("/api/v1/calculations")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -152,8 +177,12 @@ class ApiDocumentationTest {
                     .andReturn()
                     .getResponse();
 
-            assertThat(sent.getStatus()).as(name).isEqualTo(statusOf.get(name));
-            assertThat(JSON.readTree(sent.getContentAsString())).as(name).isEqualTo(responseOf.get(name));
+            assertThat(sent.getStatus()).as(name).isEqualTo(expected.get(name).status());
+            assertThat(JSON.readTree(sent.getContentAsString()))
+                    .as(name)
+                    .isEqualTo(expected.get(name).body());
         }
     }
+
+    private record Expected(int status, JsonNode body) {}
 }

@@ -25,12 +25,11 @@ class CalculationController {
 
     /*
      * Each request example has a response example of the same name: what the API returns for it.
-     * ApiDocumentationTest replays every pair. The unknown-operation example's detail is generated in OpenApiConfig.
+     * ApiDocumentationTest replays every pair. OpenApiConfig writes the endpoint description and every Problem
+     * Details example from the domain, so no domain value is copied here (STANDARDS §4).
      */
     @Operation(
             summary = "Perform one Calculation",
-            description = "Applies one Operation to its Operands and returns the exact Result, rounded only where"
-                    + " the Operation's rules say (BR-3). Only the first failure is reported (PRD §3.2 order).",
             requestBody =
                     @io.swagger.v3.oas.annotations.parameters.RequestBody(
                             content =
@@ -85,42 +84,29 @@ class CalculationController {
                                         })),
                 @ApiResponse(
                         responseCode = "400",
-                        description = "Invalid request, unknown operation, or an Operand outside BR-1.",
+                        description = "`invalid-request`: malformed JSON; `operation` or `a` missing; `operation` not a"
+                                + " string; an Operand that is not a decimal number; `b` missing for a binary"
+                                + " Operation; or a request limit broken (the `detail` names which)."
+                                + " `unknown-operation`: `operation` is not a supported name."
+                                + " `operand-out-of-range`: an Operand outside the Operand limits.",
                         content =
                                 @Content(
                                         mediaType = "application/problem+json",
                                         schema = @Schema(implementation = ProblemDetail.class),
                                         examples = {
-                                            @ExampleObject(
-                                                    name = "invalid-request",
-                                                    value = "{\"type\": \"/problems/invalid-request\", \"title\":"
-                                                            + " \"Invalid request\", \"status\": 400, \"detail\":"
-                                                            + " \"ADD takes exactly 2 operand(s).\", \"instance\":"
-                                                            + " \"/api/v1/calculations\"}"),
+                                            @ExampleObject(name = "invalid-request"),
                                             @ExampleObject(name = "unknown-operation"),
-                                            @ExampleObject(
-                                                    name = "operand-out-of-range",
-                                                    value = "{\"type\": \"/problems/operand-out-of-range\", \"title\":"
-                                                            + " \"Operand out of range\", \"status\": 400, \"detail\":"
-                                                            + " \"Operand 'a' is out of range: it must have at most 100"
-                                                            + " significant digits and a scale between -1000 and 1000.\","
-                                                            + " \"instance\": \"/api/v1/calculations\"}")
+                                            @ExampleObject(name = "operand-out-of-range")
                                         })),
                 @ApiResponse(
                         responseCode = "422",
-                        description = "A valid Calculation that breaks a domain rule.",
+                        description =
+                                "`division-by-zero`: DIVIDE with `b` equal to zero in any form (`0`, `0.00`, `-0`).",
                         content =
                                 @Content(
                                         mediaType = "application/problem+json",
                                         schema = @Schema(implementation = ProblemDetail.class),
-                                        examples = {
-                                            @ExampleObject(
-                                                    name = "division-by-zero",
-                                                    value = "{\"type\": \"/problems/division-by-zero\", \"title\":"
-                                                            + " \"Division by zero\", \"status\": 422, \"detail\":"
-                                                            + " \"Cannot divide by zero.\", \"instance\":"
-                                                            + " \"/api/v1/calculations\"}")
-                                        }))
+                                        examples = {@ExampleObject(name = "division-by-zero")}))
             })
     @PostMapping
     CalculationResponse calculate(@Valid @RequestBody CalculationRequest request) {
