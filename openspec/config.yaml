@@ -1,0 +1,19 @@
+schema: spec-driven
+
+context: |
+  Before writing any artifact, read docs/PRD.md, docs/DOMAIN-MODEL.md, docs/STANDARDS.md and the item in docs/BACKLOG.md.
+  The docs are the source of truth for scope, domain terms and business rules (BR-n), and engineering standards.
+  Each change is one backlog item. The item states an outcome and its "We know it's done when" checks; the design is ours to choose, within STANDARDS.md.
+
+rules:
+  proposal:
+    - Name the backlog item (number and outcome) the change delivers.
+    - State what is out of scope.
+    - List which of PRD.md, DOMAIN-MODEL.md, STANDARDS.md this change must update (or "none").
+  specs:
+    - Every "We know it's done when" check of the backlog item is covered by at least one scenario.
+    - Use the DOMAIN-MODEL.md glossary terms exactly and cite business rules by BR-n.
+  tasks:
+    - Order tasks test-first (write the failing test, then the code).
+    - Include a task to update each affected doc in docs/, including its change log.
+    - End with a task to run ./gradlew clean build.
