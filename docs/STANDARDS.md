@@ -77,6 +77,7 @@ Write tests first (red → green → refactor).
 | Domain unit | JUnit + AssertJ | Every operation and every edge case listed in DOMAIN-MODEL.md; every business rule |
 | Web slice | MockMvc web-slice test | Controller mapping, request parsing, every Problem Details error path in the PRD |
 | Smoke | `@SpringBootTest` (one) | Context starts; one happy-path request end to end |
+| API docs | `@SpringBootTest` + MockMvc (`ApiDocumentationTest`; springdoc is not part of the web slice) | §4 OpenAPI rules; documented `operation` values equal the domain's; every response example equals what the API sends for the same-named request example |
 | Architecture | ArchUnit | Section 2 dependency rules |
 
 - No coverage-percentage gate. Instead: every operation, every business rule and every error path MUST have a test.
@@ -105,3 +106,4 @@ Write tests first (red → green → refactor).
 | 2026-11-10 | Copied from math-api (its final v1 docs) for the one-agent rerun with reviews from the start |
 | 2026-11-14 | §7: each backlog item goes through OpenSpec (propose → apply → verify → archive) and runs end to end without pausing |
 | 2026-11-14 | §7: open the PR as a draft before archive, so the CI task can be ticked first (retro 1) |
+| 2026-11-14 | §6: `ApiDocumentationTest` row; it is a second `@SpringBootTest` because springdoc is not part of the web slice (backlog item 5) |

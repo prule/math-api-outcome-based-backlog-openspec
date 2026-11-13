@@ -1,7 +1,6 @@
 package com.paulrule.mathapi.domain;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.util.function.BinaryOperator;
 
 /** The closed set of arithmetic functions (DOMAIN-MODEL.md §3). */
@@ -13,7 +12,7 @@ public enum Operation {
         if (b.signum() == 0) { // BR-2: every zero representation
             throw new DivisionByZeroException();
         }
-        return a.divide(b, MathContext.DECIMAL128); // BR-3
+        return a.divide(b, Calculation.ROUNDING);
     });
 
     private final int arity;

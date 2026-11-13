@@ -19,9 +19,9 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdviceAd
  * here: at most 4 bytes per character in UTF-8, UTF-16 and UTF-32.
  */
 @ControllerAdvice
-class RequestBodyLimit extends RequestBodyAdviceAdapter {
+public class RequestBodyLimit extends RequestBodyAdviceAdapter {
 
-    static final int MAX_CHARACTERS = 16_384;
+    public static final int MAX_CHARACTERS = 16_384;
 
     private static final int MAX_BYTES = 4 * MAX_CHARACTERS;
 
