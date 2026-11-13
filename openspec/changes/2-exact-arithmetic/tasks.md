@@ -14,8 +14,8 @@
 ## 3. Web adapter
 
 - [x] 3.1 Write failing `@WebMvcTest` tests: exact Results for the three Operations; number and string Operands; `a`/`b` echoed with their scale (`"1.50"`, `1e2` → `"100"`); Result in plain notation (`1E+3` → `"1000"`)
-- [x] 3.2 Write failing `@WebMvcTest` tests for every error path: malformed JSON, missing `operation`, missing `a`, `"abc"`, `true`, missing or null `b` (all `invalid-request`); `POWER`, `add` (`unknown-operation`, `detail` lists the three names); `FOO` with no `b` (`unknown-operation` first); 415 and 405 as Problem Details; no `detail` contains a Java class or exception name
-- [x] 3.3 Add the controller, request/response records and the Problem Details advice; add `spring-boot-starter-validation` and `spring-boot-starter-webmvc-test`; verify the web tests pass
+- [x] 3.2 Write failing `@WebMvcTest` tests for every error path: malformed JSON, missing `operation`, `operation` `123` or `true`, missing `a`, `"abc"`, `true`, missing or null `b` (all `invalid-request`); `POWER`, `add` (`unknown-operation`, `detail` lists the three names); `FOO` with no `b` (`unknown-operation` first); 415 and 405 as Problem Details with `type`, `title`, `status`; an unexpected failure as 500 Problem Details with a fixed `detail`; no `detail` contains a Java class, exception or package name
+- [x] 3.3 Add the controller, request/response records, the Problem Details advice (with catch-all and explicit `about:blank`) and `JacksonConfig` (strict text fields); add `spring-boot-starter-validation` and `spring-boot-starter-webmvc-test`; verify the web tests pass
 
 ## 4. Smoke
 

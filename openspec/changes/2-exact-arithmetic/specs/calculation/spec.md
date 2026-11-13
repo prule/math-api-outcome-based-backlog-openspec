@@ -50,7 +50,7 @@ Result normalised: trailing zeros stripped, plain (non-scientific) notation, and
 
 ### Requirement: Malformed requests are rejected as invalid
 The service SHALL answer 400 Problem Details with `type` `/problems/invalid-request` when the body is not valid JSON,
-`operation` or `a` is missing, an Operand is not a decimal number, or a binary Operation has no `b` (BR-9).
+`operation` or `a` is missing, `operation` is not a JSON string, an Operand is not a decimal number, or a binary Operation has no `b` (BR-9).
 
 #### Scenario: Body is not valid JSON
 - **WHEN** a client sends a body that is not valid JSON
@@ -59,6 +59,10 @@ The service SHALL answer 400 Problem Details with `type` `/problems/invalid-requ
 #### Scenario: Required field missing
 - **WHEN** a client omits `operation` or `a`
 - **THEN** the response is 400 with `type` `/problems/invalid-request`
+
+#### Scenario: Operation is not a string
+- **WHEN** a client sends `"operation": 123` or `"operation": true`
+- **THEN** the response is 400 with `type` `/problems/invalid-request`, not `unknown-operation`
 
 #### Scenario: Operand is not a number
 - **WHEN** a client sends `"a": "abc"` or `"a": true`
@@ -92,6 +96,15 @@ Every error response, including those raised by the framework, SHALL be `applica
 #### Scenario: Unsupported method
 - **WHEN** a client sends `GET /api/v1/calculations`
 - **THEN** the response is 405 `application/problem+json`
+
+#### Scenario: Unexpected failure
+- **WHEN** handling a request fails for a reason the service did not plan for
+- **THEN** the response is 500 `application/problem+json` with `type` `about:blank` and a fixed `detail` that
+  says nothing about the cause
+
+#### Scenario: Framework errors carry a type
+- **WHEN** the framework rejects a request (e.g. 404, 405, 415)
+- **THEN** the Problem Details body has `"type": "about:blank"` written out
 
 #### Scenario: Detail exposes no internals
 - **WHEN** any of the rejections above is returned

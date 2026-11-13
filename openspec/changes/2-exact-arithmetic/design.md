@@ -36,6 +36,11 @@ Details advice. See proposal.md for why.
   Jackson reads a JSON number straight into `BigDecimal` from its text, so `0.1` stays exact, and reads a JSON
   string through `new BigDecimal(String)`. The response record holds strings: `a` and `b` via `toPlainString()`
   of the received values (keeps their scale), `result` via `toPlainString()` of `result()`.
+- **Strict text fields**: Jackson by default coerces a JSON number or boolean into a `String`, so
+  `"operation": 123` would reach the lookup as `"123"` and be reported as `unknown-operation`. A
+  `JsonMapperBuilderCustomizer` in `config.JacksonConfig` sets the coercion of Integer, Float and Boolean into
+  textual types to Fail, making it an invalid request. (`@JsonFormat(lenient = FALSE)` on the field does not stop
+  it in Jackson 3.) Numeric targets keep accepting JSON strings, so `"a": "0.1"` still works.
 - **Error order (PRD §3.2)** falls out of the flow: body parse and `@Valid` (invalid request) run before the
   controller; inside it `named` (unknown operation) runs before the `Calculation` constructor (BR-9).
 - **Problem Details**: one `@RestControllerAdvice` that extends `ResponseEntityExceptionHandler`, so framework
@@ -43,12 +48,16 @@ Details advice. See proposal.md for why.
   failed validation to give `type` `/problems/invalid-request` and a fixed, internals-free `detail`, and adds
   handlers for `UnknownOperationException` (`/problems/unknown-operation`, `detail` lists `Operation.values()`)
   and `ArityMismatchException` (`/problems/invalid-request`). The unknown name is not echoed, so the `detail`
-  cannot leak or amplify client input.
+  cannot leak or amplify client input. A catch-all `Exception` handler returns 500 Problem Details with a fixed
+  `detail` and logs the cause, so nothing falls through to Boot's non-Problem-Details error JSON (e.g. a
+  `BigDecimal` scale overflow before item 4's limits). Spring omits a `null` type when serialising, so
+  `createResponseEntity` and the catch-all write `about:blank` explicitly (PRD §3.2: every error has a `type`).
 - **ArchUnit**: add "adapter must not depend on config", with its own violating fixture, following item 1's
   pattern.
 - **Tests** (STANDARDS.md §6): domain unit tests for every DOMAIN-MODEL.md §3 edge case of the three Operations,
   BR-4 and BR-9 and the name lookup; a `@WebMvcTest` slice for parsing, echoing, rendering and every error path;
-  one happy-path request added to the existing `@SpringBootTest` smoke test.
+  one happy-path request added to the existing `@SpringBootTest` smoke test; a second `@WebMvcTest` with a mocked
+  use case for the catch-all, because item 4 will turn today's real trigger into a 400.
 
 ## Risks / Trade-offs
 

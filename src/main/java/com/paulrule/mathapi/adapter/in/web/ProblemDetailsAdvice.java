@@ -32,8 +32,20 @@ class ProblemDetailsAdvice extends ResponseEntityExceptionHandler {
         return problem;
     }
 
+    /** RFC 9457's default type, written out: Spring omits a null type and PRD §3.2 wants one on every error. */
+    private static final URI BLANK = URI.create("about:blank");
+
     private static ProblemDetail invalidRequest(String detail) {
         return problem(HttpStatus.BAD_REQUEST, "invalid-request", "Invalid request", detail);
+    }
+
+    @Override
+    protected ResponseEntity<Object> createResponseEntity(
+            Object body, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        if (body instanceof ProblemDetail problem && problem.getType() == null) {
+            problem.setType(BLANK);
+        }
+        return super.createResponseEntity(body, headers, status, request);
     }
 
     @Override
@@ -62,5 +74,15 @@ class ProblemDetailsAdvice extends ResponseEntityExceptionHandler {
     @ExceptionHandler
     ProblemDetail arityMismatch(ArityMismatchException ex) {
         return invalidRequest(ex.getMessage());
+    }
+
+    /** Anything unplanned is still Problem Details, and says nothing about why. */
+    @ExceptionHandler
+    ProblemDetail unexpected(Exception ex) {
+        logger.error("Unexpected error", ex);
+        var problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.INTERNAL_SERVER_ERROR, "The server could not complete the request.");
+        problem.setType(BLANK);
+        return problem;
     }
 }

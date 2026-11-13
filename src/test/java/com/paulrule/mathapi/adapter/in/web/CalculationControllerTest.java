@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.paulrule.mathapi.config.JacksonConfig;
 import com.paulrule.mathapi.config.UseCaseConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -22,7 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 @WebMvcTest(CalculationController.class)
-@Import(UseCaseConfig.class)
+@Import({UseCaseConfig.class, JacksonConfig.class})
 class CalculationControllerTest {
 
     private static final String PROBLEM = "/problems/";
@@ -36,14 +37,23 @@ class CalculationControllerTest {
                 .content(body));
     }
 
-    private void expectProblem(ResultActions result, int status, String type) throws Exception {
+    /** Problem Details whose detail names no Java class, exception or package (PRD §3.2). */
+    static void expectProblemDetails(ResultActions result, int status) throws Exception {
         result.andExpect(status().is(status))
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-                .andExpect(jsonPath("$.type").value(PROBLEM + type))
+                .andExpect(jsonPath("$.type").isString())
                 .andExpect(jsonPath("$.title").isString())
                 .andExpect(jsonPath("$.status").value(status))
                 .andExpect(jsonPath("$.detail")
-                        .value(allOf(not(containsString("Exception")), not(containsString("java.")))));
+                        .value(allOf(
+                                not(containsString("Exception")),
+                                not(containsString("java.")),
+                                not(containsString("springframework")))));
+    }
+
+    private void expectProblem(ResultActions result, int status, String type) throws Exception {
+        expectProblemDetails(result, status);
+        result.andExpect(jsonPath("$.type").value(PROBLEM + type));
     }
 
     @Test
@@ -77,7 +87,7 @@ class CalculationControllerTest {
                 .andExpect(jsonPath("$.result").value("0.3"));
     }
 
-    @Test
+    @Test // PRD §3.2: only the Result is normalised (BR-4)
     void echoesOperandsWithTheirScaleInPlainNotation() throws Exception {
         calculate("""
                         {"operation": "ADD", "a": "1.50", "b": 1e2}""")
@@ -87,7 +97,7 @@ class CalculationControllerTest {
                 .andExpect(jsonPath("$.result").value("101.5"));
     }
 
-    @Test
+    @Test // BR-4
     void returnsResultInPlainNotation() throws Exception {
         calculate("""
                         {"operation": "MULTIPLY", "a": "1E+3", "b": "1"}""").andExpect(status().isOk()).andExpect(jsonPath("$.result").value("1000"));
@@ -98,12 +108,14 @@ class CalculationControllerTest {
             strings = {
                 "{not json",
                 "{\"a\": 1, \"b\": 2}",
+                "{\"operation\": 123, \"a\": 1, \"b\": 2}",
+                "{\"operation\": true, \"a\": 1, \"b\": 2}",
                 "{\"operation\": \"ADD\", \"b\": 2}",
                 "{\"operation\": \"ADD\", \"a\": \"abc\", \"b\": 2}",
                 "{\"operation\": \"ADD\", \"a\": true, \"b\": 2}",
                 "{\"operation\": \"ADD\", \"a\": \"\", \"b\": 2}",
-                "{\"operation\": \"ADD\", \"a\": 1}",
-                "{\"operation\": \"ADD\", \"a\": 1, \"b\": null}"
+                "{\"operation\": \"ADD\", \"a\": 1}", // BR-9
+                "{\"operation\": \"ADD\", \"a\": 1, \"b\": null}" // BR-9
             })
     void rejectsMalformedRequestsAsInvalid(String body) throws Exception {
         expectProblem(calculate(body), 400, "invalid-request");
@@ -120,7 +132,7 @@ class CalculationControllerTest {
                 .value(allOf(containsString("ADD"), containsString("SUBTRACT"), containsString("MULTIPLY"))));
     }
 
-    @Test
+    @Test // PRD §3.2 failure order: unknown operation before operand count (BR-9)
     void reportsUnknownOperationBeforeMissingB() throws Exception {
         expectProblem(calculate("""
                 {"operation": "FOO", "a": 1}"""), 400, "unknown-operation");
@@ -128,21 +140,15 @@ class CalculationControllerTest {
 
     @Test
     void unsupportedMediaTypeIsProblemDetails() throws Exception {
-        mvc.perform(post("/api/v1/calculations")
+        expectProblemDetails(
+                mvc.perform(post("/api/v1/calculations")
                         .contentType(MediaType.TEXT_PLAIN)
-                        .content("ADD 1 2"))
-                .andExpect(status().isUnsupportedMediaType())
-                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-                .andExpect(jsonPath("$.title").isString())
-                .andExpect(jsonPath("$.status").value(415))
-                .andExpect(jsonPath("$.detail").isString());
+                        .content("ADD 1 2")),
+                415);
     }
 
     @Test
     void unsupportedMethodIsProblemDetails() throws Exception {
-        mvc.perform(get("/api/v1/calculations"))
-                .andExpect(status().isMethodNotAllowed())
-                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-                .andExpect(jsonPath("$.status").value(405));
+        expectProblemDetails(mvc.perform(get("/api/v1/calculations")), 405);
     }
 }
