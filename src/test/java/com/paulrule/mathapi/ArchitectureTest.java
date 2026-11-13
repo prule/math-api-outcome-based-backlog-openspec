@@ -37,6 +37,16 @@ class ArchitectureTest {
                 .allowEmptyShould(true);
     }
 
+    static ArchRule adapterDoesNotDependOnConfig(String root) {
+        return noClasses()
+                .that()
+                .resideInAPackage(root + ".adapter..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAPackage(root + ".config..")
+                .allowEmptyShould(true);
+    }
+
     @Test
     void mainClassesKeepToTheLayerRules() {
         JavaClasses main = new ClassFileImporter()
@@ -45,6 +55,7 @@ class ArchitectureTest {
 
         domainDependsOnlyOnJava(ROOT).check(main);
         applicationIsFrameworkFreeAndPointsInwards(ROOT).check(main);
+        adapterDoesNotDependOnConfig(ROOT).check(main);
     }
 
     @Test
@@ -62,6 +73,14 @@ class ArchitectureTest {
         assertThat(applicationIsFrameworkFreeAndPointsInwards(FIXTURE)
                         .evaluate(fixture)
                         .hasViolation())
+                .isTrue();
+    }
+
+    @Test
+    void adapterClassDependingOnConfigIsRejected() {
+        JavaClasses fixture = new ClassFileImporter().importPackages(FIXTURE + ".adapter", FIXTURE + ".config");
+
+        assertThat(adapterDoesNotDependOnConfig(FIXTURE).evaluate(fixture).hasViolation())
                 .isTrue();
     }
 }
